@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input id="fileInput" type="file" />
+    <button id="uploadButton">업로드</button>
+
+    <script>
+      const input = document.getElementById("fileInput");
+      const button = document.getElementById("uploadButton");
+
+      button.addEventListener("click", async () => {
+        const file = input.files[0];
+
+        // 업로드를 위한 signed url을 express server에서 부터 가지고 온다.
+        const urlResponse = await fetch(
+          "http://localhost:3000/get-upload-url",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileType: file.type,
+            }),
+          }
+        );
+
+        const { uploadURL } = await urlResponse.json();
+
+        try {
+          // signed url을 통해서 이미지를 업로드 한다.
+          const uploadResponse = await fetch(uploadURL, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+
+          input.value = "";
+          alert("성공적으로 업로드 되었습니다.");
+          // 서버로 성공 req를 보낸다.
+        } catch (error) {
+          // 서버로 실패 req를 보낸다.
+        }
+      });
+    </script>
+  </body>
+</html>
